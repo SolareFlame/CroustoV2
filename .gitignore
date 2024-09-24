@@ -1,0 +1,10 @@
+*.iml
+.idea/
+node_modules/
+
+test/
+old/
+
+src/.env
+locations.json
+sendList.json
