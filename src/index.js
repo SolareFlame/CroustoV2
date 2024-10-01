@@ -1,10 +1,15 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
-const { SetLocation, SetChannel, SetRole, SetDate } = require('./selector_crous');
-const {deploy} = require("./deploy-commands");
+const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
+const { deploy } = require("./command/deployCommands");
+
+const { setPing } = require('./editor/sendListEditor');
+const {getLocation} = require("./editor/locationEditor");
+const {directMenu} = require("./menu/renderMenu");
+const {today} = require("./menu/getMenu");
+const {sendMenu} = require("./command/commandSendMenu");
 
 let data = [];
-
 
 const client = new Client({
     intents: [
@@ -30,10 +35,37 @@ client.on(Events.InteractionCreate, async interaction => {
                 ephemeral: true
             });
         }
+
+
+
+        if (interaction.commandName === 'menu') {
+            let id = interaction.options.getNumber('id');
+
+            //vérifier l'existance de l'id
+            if (getLocation(id)) {
+                console.log("ID valide");
+            } else {
+                console.log("ID invalide");
+                return;
+            }
+
+            let menu = await directMenu(id, today(), interaction.options.getString('repas'))
+
+            if (menu === null) {
+                await interaction.reply({
+                    content: "Erreur lors de la récupération du menu.",
+                    ephemeral: true
+                });
+                return;
+            }
+
+            sendMenu(interaction, menu).then(() => {
+                console.log("Menu envoyé avec succès.");
+            });
+        }
     }
 
     if (interaction.isStringSelectMenu()) {
-
         // Get the location
         if (interaction.customId === 'location_selector') {
             data.push(interaction.values[0]);
@@ -45,7 +77,6 @@ client.on(Events.InteractionCreate, async interaction => {
                 components: [await SetChannel(interaction.guild)],
                 ephemeral: true
             });
-
         }
 
         // Get the channel
@@ -85,6 +116,10 @@ client.on(Events.InteractionCreate, async interaction => {
                 components: [],
                 ephemeral: true
             });
+
+            console.log("Data ajoutée :" + data[0] + " " + data[1] + " " + data[2] + " " + data[3]);
+
+            setPing(data[0], data[1], data[2], data[3], "../sendList.json");
         }
     }
 });

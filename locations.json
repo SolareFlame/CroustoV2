@@ -1,12 +1,17 @@
 [
-  {
-    "id": 682,
-    "name": "Resto U' Cours Léopold",
-    "desc": "À proximité du campus droit"
-  },
-  {
-    "id": 683,
-    "name": "Resto U' Médreville",
-    "desc": "À proximité de l'IUT Charlemagne, du lycée Frédéric Chopin et du lycée Emmanuel Héré."
-  }
+    {
+        "id": 682,
+        "name": "Resto U' Cours Léopold",
+        "desc": "À proximité du campus droit"
+    },
+    {
+        "id": 683,
+        "name": "Resto U' Médreville",
+        "desc": "À proximité de l'IUT Charlemagne, du lycée Frédéric Chopin et du lycée Emmanuel Héré."
+    },
+    {
+        "id": 600,
+        "name": "Crous de Paris",
+        "desc": "Le Crous de Paris est le plus grand Crous de France."
+    }
 ]

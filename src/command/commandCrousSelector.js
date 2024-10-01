@@ -1,6 +1,6 @@
 const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
 
-const locations = require('../locations.json');
+const locations = require('../../locations.json');
 
 module.exports = {
     // Set a location
