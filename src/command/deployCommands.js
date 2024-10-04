@@ -1,5 +1,7 @@
 require('dotenv').config();
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { REST, Routes, SlashCommandBuilder, StringSelectMenuOptionBuilder} = require('discord.js');
+const {filterRestaurants} = require("../editor/restaurants");
+const restaurants = filterRestaurants();
 
 const deployCommands = [
     new SlashCommandBuilder()
@@ -10,11 +12,18 @@ const deployCommands = [
     new SlashCommandBuilder()
         .setName('menu')
         .setDescription('Affiche le menu du jour')
-        .addNumberOption(option =>
+        .addStringOption(option =>
             option.setName('id')
                 .setDescription('ID du restaurant')
                 .setRequired(true)
+                .addChoices(
+                    ...restaurants.map(restaurant => ({
+                        name: restaurant.title,
+                        value: String(restaurant.id)
+                    }))
+                )
         )
+
         .addStringOption(option =>
             option.setName('repas')
                 .setDescription('Repas du jour')
@@ -22,6 +31,22 @@ const deployCommands = [
                 .addChoices(
                     { name: 'midi', value: 'midi' },
                     { name: 'soir', value: 'soir' }
+                )
+        )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('info')
+        .setDescription('Affiche les informations sur un restaurant')
+        .addStringOption(option =>
+            option.setName('id')
+                .setDescription('ID du restaurant')
+                .setRequired(true)
+                .addChoices(
+                    ...restaurants.map(restaurant => ({
+                        name: restaurant.title,
+                        value: String(restaurant.id)
+                    }))
                 )
         )
         .toJSON()

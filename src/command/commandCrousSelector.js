@@ -1,6 +1,8 @@
 const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const {filterRestaurants} = require("../editor/restaurants");
 
-const locations = require('../../locations.json');
+
+const restaurants = filterRestaurants();
 
 module.exports = {
     // Set a location
@@ -9,10 +11,10 @@ module.exports = {
             .setPlaceholder('Sélectionnez votre Crous')
             .setCustomId('location_selector')
             .addOptions(
-                locations.map(location => new StringSelectMenuOptionBuilder()
-                    .setLabel(location.name)
-                    .setDescription(location.desc || 'Aucune description')
-                    .setValue(location.id.toString())
+                restaurants.map(restaurant => new StringSelectMenuOptionBuilder()
+                    .setLabel(restaurant.title)
+                    .setDescription(restaurant.shortDesc || 'Aucune description')
+                    .setValue(restaurant.id.toString())
                 )
             );
 
