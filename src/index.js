@@ -1,15 +1,17 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
+
 const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
 const { deploy } = require("./command/deployCommands");
 
 const { setPing } = require('./editor/sendListEditor');
-const { existsRestaurant } = require('./editor/restaurants');
-const { directMenu } = require("./menu/renderMenu");
-const { today } = require("./menu/getMenu");
-const { sendMenu } = require("./command/commandSendMenu");
 const { startChecking } = require("./startChecking");
 const { sendInfo } = require("./command/commandSendInfo");
+const {existsRestaurant} = require("./editor/restaurants");
+const {directMenu} = require("./menu/renderMenu");
+const {today} = require("./menu/getMenu");
+const {sendMenu} = require("./command/commandSendMenu");
+const {sendHelp} = require("./command/commandHelp");
 
 const client = new Client({
     intents: [
@@ -19,35 +21,19 @@ const client = new Client({
     ]
 });
 
+const userData = {};
+
 client.once('ready', () => {
     console.log(`${process.env.DISCORD_BOT_NAME} logged in as ${client.user.tag}`);
     client.user.setActivity("les menus du jour", { type: ActivityType.Watching });
 
     deploy();
-
     startChecking(client);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
     try {
         if (interaction.isCommand()) {
-            if (interaction.commandName === 'new') {
-                if (!interaction.member.permissions.has('ADMINISTRATOR')) {
-                    await interaction.reply({
-                        content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
-                        ephemeral: true
-                    });
-                    return;
-                } else {
-                    await interaction.reply({
-                        content: "Sélectionnez votre Crous :",
-                        components: [await SetLocation()],
-                        ephemeral: true
-                    });
-                    return;  // Stop further execution
-                }
-            }
-
             if (interaction.commandName === 'menu') {
                 let id = parseInt(interaction.options.getString('id'));
 
@@ -61,7 +47,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 if (!menu) {
                     await interaction.reply({
-                        content: "Erreur lors de la récupération du menu.",
+                        content: "Aucun repas du **" + interaction.options.getString('repas') + "** trouvé pour aujourd'hui.",
                         ephemeral: true
                     });
                     return;
@@ -69,7 +55,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 await sendMenu(interaction, menu, id);
                 console.log("Menu envoyé avec succès.");
-                return; // Stop further execution
+                return;
             }
 
             if (interaction.commandName === 'info') {
@@ -83,57 +69,93 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 await sendInfo(interaction, id);
                 console.log("Information envoyée avec succès.");
-                return; // Stop further execution
+                return;
+            }
+
+            if (interaction.commandName === 'help') {
+                await sendHelp(interaction);
+                return;
+            }
+
+            /*
+            ------------------- /NEW -------------------
+             */
+
+            if (interaction.commandName === 'new') {
+                if (!interaction.member.permissions.has('ADMINISTRATOR')) {
+                    await interaction.reply({
+                        content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
+                        ephemeral: true
+                    });
+                    return;
+                } else {
+                    userData[interaction.user.id] = [];
+                    await interaction.reply({
+                        content: "Sélectionnez votre Crous :",
+                        components: [await SetLocation()],
+                        ephemeral: true
+                    });
+                    return;
+                }
             }
         }
 
         if (interaction.isStringSelectMenu()) {
-            await interaction.deferUpdate(); // Defer first to prevent timeout
+            await interaction.deferUpdate();
+
+            const userResponses = userData[interaction.user.id] || [];
 
             if (interaction.customId === 'location_selector') {
-                const locationId = interaction.values[0];
+                userResponses[0] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Location: ${locationId}`,
+                    content: `Location: ${userResponses[0]}`,
                     components: [await SetChannel(interaction.guild)],
                     ephemeral: true
                 });
-                return; // Stop further execution
+                return;
             }
 
             if (interaction.customId === 'channel_selector') {
-                const channelId = interaction.values[0];
+                userResponses[1] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Channel: ${channelId}`,
+                    content: `Channel: ${userResponses[1]}`,
                     components: [await SetRole(interaction.guild)],
                     ephemeral: true
                 });
-                return; // Stop further execution
+                return;
             }
 
             if (interaction.customId === 'role_selector') {
-                const roleId = interaction.values[0];
+                userResponses[2] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Role: ${roleId}`,
+                    content: `Role: ${userResponses[2]}`,
                     components: [await SetDate()],
                     ephemeral: true
                 });
-                return; // Stop further execution
+                return;
             }
 
             if (interaction.customId === 'date_selector') {
-                const selectedDate = interaction.values[0];
+                userResponses[3] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Date: ${selectedDate}`,
+                    content: `Date: ${userResponses[3]}`,
                     components: [],
                     ephemeral: true
                 });
 
-                console.log(`Data ajoutée : ${selectedDate}`);
-                return; // Stop further execution
+                console.log(`Data ajoutée : ${userResponses}`);
+
+                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], "../sendList.json");
+                delete userData[interaction.user.id];
+                return;
             }
         }
 
@@ -154,4 +176,3 @@ client.on(Events.InteractionCreate, async interaction => {
 client.login(process.env.DISCORD_TOKEN).catch(error => {
     console.error("Erreur lors de la connexion du bot :", error);
 });
-

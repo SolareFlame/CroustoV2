@@ -49,6 +49,11 @@ const deployCommands = [
                     }))
                 )
         )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Affiche les commandes disponibles')
         .toJSON()
 ];
 

@@ -71,12 +71,13 @@ module.exports = {
         return row;
     },
 
-    // Set a date (by modal entry)
+    // Set a date
     async SetDate() {
         const select = new StringSelectMenuBuilder()
             .setPlaceholder('Sélectionnez votre horaire')
             .setCustomId('date_selector')
             .addOptions(
+                // Create 24 options for each hour of the day
                 Array.from({ length: 24 }, (_, i) => i).map(hour => new StringSelectMenuOptionBuilder()
                     .setLabel(`${hour.toString().padStart(2, '0')}:00`)
                     .setValue(hour.toString())
