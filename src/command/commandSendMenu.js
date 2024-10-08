@@ -2,6 +2,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { filterRestaurants, getRestaurant } = require("../editor/restaurants");
 const fs = require('fs');
 const { today, renderDate } = require("../menu/getMenu");
+require('dotenv').config();
 
 async function sendMenu(interaction, menu, id) {
     try {
@@ -17,9 +18,9 @@ async function sendMenu(interaction, menu, id) {
 
         const embed = new EmbedBuilder()
             .setAuthor({
-                name: "Crousto",
-                url: "https://github.com/solareflame/CroustoV2",
-                iconURL: "https://imgur.com/3hsFWw7.png"
+                name: process.env.DISCORD_BOT_NAME,
+                url: process.env.GITHUB_URL,
+                iconURL: process.env.LOGO_1_URL
             })
             .setColor(0xE30613)
             .setTitle('Menu du ' + date + ' : ' + title)
@@ -32,7 +33,7 @@ async function sendMenu(interaction, menu, id) {
             .setThumbnail('\n' + img)
             .setTimestamp()
             .setFooter({
-                text: 'Crousto by Solare',
+                text: `${process.env.DISCORD_BOT_NAME} by Solare`,
                 iconURL: 'https://avatars.githubusercontent.com/u/88492960?v=4'
             });
 
