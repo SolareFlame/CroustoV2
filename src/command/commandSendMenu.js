@@ -17,8 +17,8 @@ async function sendMenu(interaction, menu, id) {
 
         const embed = new EmbedBuilder()
             .setAuthor({
-                name: "ULmenu",
-                url: "https://github.com/solareflame/ULmenu",
+                name: "Crousto",
+                url: "https://github.com/solareflame/CroustoV2",
                 iconURL: "https://imgur.com/3hsFWw7.png"
             })
             .setColor(0xE30613)
@@ -32,7 +32,7 @@ async function sendMenu(interaction, menu, id) {
             .setThumbnail('\n' + img)
             .setTimestamp()
             .setFooter({
-                text: 'Ulmenu by Solare',
+                text: 'Crousto by Solare',
                 iconURL: 'https://avatars.githubusercontent.com/u/88492960?v=4'
             });
 
@@ -45,7 +45,9 @@ async function sendMenu(interaction, menu, id) {
         const row = new ActionRowBuilder()
             .addComponents(button);
 
-        if (interaction === null) return embed;
+        let data = [embed, row];
+
+        if (interaction === null) return data;
 
 
         await interaction.reply({

@@ -4,14 +4,17 @@ const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js'
 const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
 const { deploy } = require("./command/deployCommands");
 
-const { setPing } = require('./editor/sendListEditor');
+const { setPing, existPing, removePing} = require('./editor/sendListEditor');
 const { startChecking } = require("./startChecking");
 const { sendInfo } = require("./command/commandSendInfo");
-const {existsRestaurant} = require("./editor/restaurants");
+const {existsRestaurant, getRestaurant} = require("./editor/restaurants");
 const {directMenu} = require("./menu/renderMenu");
 const {today} = require("./menu/getMenu");
 const {sendMenu} = require("./command/commandSendMenu");
 const {sendHelp} = require("./command/commandHelp");
+
+const { PermissionsBitField } = require('discord.js');
+const {sendList} = require("./command/commandSendList");
 
 const client = new Client({
     intents: [
@@ -77,12 +80,56 @@ client.on(Events.InteractionCreate, async interaction => {
                 return;
             }
 
+            if (interaction.commandName === 'clear') {
+                if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                    await interaction.reply({
+                        content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                let channel = interaction.options.getChannel('channel');
+
+                if (!channel) {
+                    await interaction.reply({
+                        content: "Channel invalide",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                if(!existPing(channel.id)) {
+                    await interaction.reply({
+                        content: "Aucune notification quotidienne n'est configurée pour ce channel. (/list)",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                await removePing(channel.id, "../sendList.json");
+
+                await interaction.reply({
+                    content: "Notification quotidienne supprimée pour le channel <#" + channel + ">",
+                    ephemeral: true
+                });
+
+                console.log("Notification quotidienne supprimée pour le channel " + channel);
+                return;
+            }
+
+
+            if (interaction.commandName === 'list') {
+                await sendList(interaction, client, interaction.guild.id);
+                return;
+            }
+
             /*
             ------------------- /NEW -------------------
              */
 
             if (interaction.commandName === 'new') {
-                if (!interaction.member.permissions.has('ADMINISTRATOR')) {
+                if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                     await interaction.reply({
                         content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
                         ephemeral: true
@@ -110,7 +157,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Location: ${userResponses[0]}`,
+                    content: `Sélectionnez le channel où vous souhaitez recevoir les notifications :`,
                     components: [await SetChannel(interaction.guild)],
                     ephemeral: true
                 });
@@ -122,7 +169,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Channel: ${userResponses[1]}`,
+                    content: `Sélectionnez le rôle qui recevra les notifications :`,
                     components: [await SetRole(interaction.guild)],
                     ephemeral: true
                 });
@@ -134,7 +181,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Role: ${userResponses[2]}`,
+                    content: `Sélectionnez l'heure à laquelle vous souhaitez recevoir les notifications :`,
                     components: [await SetDate()],
                     ephemeral: true
                 });
@@ -146,7 +193,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 userData[interaction.user.id] = userResponses;
 
                 await interaction.editReply({
-                    content: `Date: ${userResponses[3]}`,
+                    content: `Une notification automatique sera envoyée pour le \`Crous ${getRestaurant(parseInt(userResponses[0]))[0].title}\` dans le channel <#${userResponses[1]}> pour le rôle <@&${userResponses[2]}> à \`${userResponses[3]}:00h\` tous les jours.`,
                     components: [],
                     ephemeral: true
                 });

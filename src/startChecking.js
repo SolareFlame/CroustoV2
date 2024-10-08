@@ -38,11 +38,14 @@ async function checkMenus(client) {
 
             if (channel) {
                 let roleMention = `<@&${roleID}>`;
-                let embed = await sendMenu(null, menu.menu, parseInt(menu.id));
+                let data = await sendMenu(null, menu.menu, parseInt(menu.id));
 
+
+                //data = [embed, row];
                 channel.send({
                     content: `${roleMention}`,
-                    embeds: [embed]
+                    embeds: [data[0]],
+                    components: [data[1]]
                 });
             } else {
                 console.error(`Channel with ID ${channelID} not found.`);

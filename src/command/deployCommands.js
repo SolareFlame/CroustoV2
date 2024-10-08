@@ -54,6 +54,21 @@ const deployCommands = [
     new SlashCommandBuilder()
         .setName('help')
         .setDescription('Affiche les commandes disponibles')
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('clear')
+        .setDescription('Supprime une notification quotidienne pour un channel donné')
+        .addChannelOption(option =>
+            option.setName('channel')
+                .setDescription('Channel concerné')
+                .setRequired(true)
+        )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('list')
+        .setDescription('Affiche la liste des notifications quotidiennes')
         .toJSON()
 ];
 
