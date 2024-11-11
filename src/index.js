@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
 
 const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
@@ -24,6 +25,8 @@ const client = new Client({
     ]
 });
 
+const cooldowns = new Map();
+
 const userData = {};
 
 client.once('ready', () => {
@@ -38,6 +41,31 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
         if (interaction.isCommand()) {
             if (interaction.commandName === 'menu') {
+                const userId = interaction.user.id;
+                const now = Date.now();
+                const cooldownAmount = 15 * 1000;
+
+                if (!cooldowns.has(interaction.commandName)) {
+                    cooldowns.set(interaction.commandName, new Map());
+                }
+
+                const timestamps = cooldowns.get(interaction.commandName);
+
+                if (timestamps.has(userId)) {
+                    const expirationTime = timestamps.get(userId) + cooldownAmount;
+
+                    if (now < expirationTime) {
+                        const timeLeft = (expirationTime - now) / 1000; // Temps restant en secondes
+                        return await interaction.reply({
+                            content: `Veuillez attendre ${timeLeft.toFixed(1)} secondes avant de réutiliser cette commande.`,
+                            ephemeral: true,
+                        });
+                    }
+                }
+
+                timestamps.set(userId, now);
+                setTimeout(() => timestamps.delete(userId), cooldownAmount);
+
                 let id = parseInt(interaction.options.getString('id'));
 
                 if (!existsRestaurant(id)) {
@@ -51,7 +79,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (!menu) {
                     await interaction.reply({
                         content: "Aucun repas du **" + interaction.options.getString('repas') + "** trouvé pour aujourd'hui.",
-                        ephemeral: true
+                        ephemeral: true,
                     });
                     return;
                 }
@@ -121,6 +149,11 @@ client.on(Events.InteractionCreate, async interaction => {
 
             if (interaction.commandName === 'list') {
                 await sendList(interaction, client, interaction.guild.id);
+                return;
+            }
+
+            if (interaction.commandName === 'refresh') {
+                await deployServer(interaction.guild.id);
                 return;
             }
 

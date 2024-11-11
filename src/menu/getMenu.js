@@ -16,7 +16,7 @@ async function getMenuRow(id, date) {
         }
 
         const parsedData = JSON.parse(data);
-        console.log("Réponse de l'API :", parsedData); // Log de la réponse de l'API
+        console.log("Réponse de l'API :", parsedData);
 
         return parsedData;
     } catch (error) {
@@ -26,7 +26,7 @@ async function getMenuRow(id, date) {
 }
 
 async function getMenuDate(id, date) {
-    let menu_row = await getMenuRow(id, ""); // Appel avec une date vide si null
+    let menu_row = await getMenuRow(id, "");
 
     if (!menu_row) {
         console.error("Aucun menu trouvé.");

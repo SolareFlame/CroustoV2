@@ -9,6 +9,14 @@ async function sendList(interaction, client, serverID) {
     try {
         const pinglist = listPings(serverID, client);
 
+        if(pinglist.length === 0) {
+            await interaction.reply({
+                content: "Aucun ping enregistré",
+                ephemeral: true
+            });
+            return
+        }
+
         const embed = new EmbedBuilder()
             .setAuthor({
                 name: process.env.DISCORD_BOT_NAME,

@@ -88,5 +88,21 @@ async function deploy() {
     }
 }
 
+async function deployServer(GUILD_ID) {
+    try {
+        const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+
+        console.log(`Started refreshing server ${GUILD_ID} deployCommands.`);
+
+        await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, GUILD_ID), {
+            body: deployCommands,
+        });
+
+        console.log(`Successfully reloaded server ${GUILD_ID} deployCommands.`);
+    } catch (error) {
+        console.error("Error while deploying server commands: ", error);
+    }
+}
+
 module.exports = { deploy };
 

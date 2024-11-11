@@ -11,7 +11,7 @@ function render(row) {
         if (item.includes("Entrées")) res += "**🥬 Entrée:** \n - ";
 
         if (item.startsWith("Plats:")) item = "🍽️ " + item;
-        if (item.startsWith("Garnitures:")) item = "🥗 " + item;
+        if (item.startsWith("Garnitures:") || item.startsWith("Garniture:")) item = "🥗 " + item;
         if (item.startsWith("Dessert:") || item.startsWith("Desserts:")) item = "🍰 " + item;
 
         item = item.replace(/^(.*?):/g, "\n **$1**:"); // Bold the first word before ":"
