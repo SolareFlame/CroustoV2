@@ -9,7 +9,6 @@ src/.env
 locations.json
 sendList.json
 
-package.json
 package-lock.json
 sendList.json
 restaurants.json
