@@ -1,21 +1,24 @@
-require('dotenv').config();
+// Configure using dotenv file if in development
+if (process.env.NODE_ENV == "DEV") {
+    require('dotenv').config();
+}
 
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
 
 const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
 const { deploy } = require("./command/deployCommands");
 
-const { setPing, existPing, removePing} = require('./editor/sendListEditor');
+const { setPing, existPing, removePing } = require('./editor/sendListEditor');
 const { startChecking } = require("./startChecking");
 const { sendInfo } = require("./command/commandSendInfo");
-const {existsRestaurant, getRestaurant} = require("./editor/restaurants");
-const {directMenu} = require("./menu/renderMenu");
-const {today} = require("./menu/getMenu");
-const {sendMenu} = require("./command/commandSendMenu");
-const {sendHelp} = require("./command/commandHelp");
+const { existsRestaurant, getRestaurant } = require("./editor/restaurants");
+const { directMenu } = require("./menu/renderMenu");
+const { today } = require("./menu/getMenu");
+const { sendMenu } = require("./command/commandSendMenu");
+const { sendHelp } = require("./command/commandHelp");
 
 const { PermissionsBitField } = require('discord.js');
-const {sendList} = require("./command/commandSendList");
+const { sendList } = require("./command/commandSendList");
 
 const client = new Client({
     intents: [
@@ -127,7 +130,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     return;
                 }
 
-                if(!existPing(channel.id)) {
+                if (!existPing(channel.id)) {
                     await interaction.reply({
                         content: "Aucune notification quotidienne n'est configurée pour ce channel. (/list)",
                         ephemeral: true

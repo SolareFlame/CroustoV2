@@ -8,7 +8,4 @@ old/
 src/.env
 locations.json
 sendList.json
-
-package-lock.json
-sendList.json
 restaurants.json
