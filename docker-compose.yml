@@ -12,7 +12,7 @@ services:
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
       GITHUB_URL: ${GITHUB_URL}
       LOGO_1_URL: ${LOGO_1_URL}
-    command: node src/commands/deployCommands.js && node src/index.js
+    command: node src/command/deployCommands.js && node src/index.js
     volumes:
       - storage:/usr/src/bot/storage:rw
 
