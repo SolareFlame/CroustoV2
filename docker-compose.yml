@@ -13,3 +13,8 @@ services:
       GITHUB_URL: ${GITHUB_URL}
       LOGO_1_URL: ${LOGO_1_URL}
     command: node src/deployCommands.js && node src/index.js
+    volumes:
+      - storage:/usr/src/bot/storage:rw
+
+volumes:
+  storage:

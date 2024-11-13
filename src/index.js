@@ -138,7 +138,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     return;
                 }
 
-                await removePing(channel.id, "../sendList.json");
+                await removePing(channel.id, "../storage/sendList.json");
 
                 await interaction.reply({
                     content: "Notification quotidienne supprimée pour le channel <#" + channel + ">",
@@ -236,7 +236,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 console.log(`Data ajoutée : ${userResponses}`);
 
-                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], "../sendList.json");
+                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], "../storage/sendList.json");
                 delete userData[interaction.user.id];
                 return;
             }

@@ -1,4 +1,4 @@
-const sendList = require("../../sendList.json");
+const sendList = require("../../storage/sendList.json");
 const fs = require('fs');
 
 function getPing(time) {

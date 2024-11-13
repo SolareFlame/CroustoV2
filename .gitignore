@@ -10,6 +10,8 @@ locations.json
 sendList.json
 restaurants.json
 
+storage/
+
 # Logs
 logs
 *.log
