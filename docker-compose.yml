@@ -1,0 +1,15 @@
+services:
+  bot:
+    container_name: crousto-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      DISCORD_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_BOT_NAME: ${DISCORD_BOT_NAME:-Crousto}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      GITHUB_URL: ${GITHUB_URL}
+      LOGO_1_URL: ${LOGO_1_URL}
+    command: node src/deployCommands.js && node src/index.js
