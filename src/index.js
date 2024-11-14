@@ -1,5 +1,5 @@
 // Configure using dotenv file if in development
-if (process.env.NODE_ENV == "DEV") {
+if (process.env.NODE_ENV == "development") {
     require('dotenv').config();
 }
 

@@ -1,4 +1,7 @@
-require('dotenv').config();
+if(process.env.NODE_ENV == "development") {
+    require('dotenv').config();
+}
+
 const { REST, Routes, SlashCommandBuilder, StringSelectMenuOptionBuilder} = require('discord.js');
 const {filterRestaurants} = require("../editor/restaurants");
 const restaurants = filterRestaurants();
