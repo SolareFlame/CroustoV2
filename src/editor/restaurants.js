@@ -26,7 +26,7 @@ function existsRestaurant(id) {
 }
 
 function filterRestaurants() {
-    return JsonStorageManager.getStorage(Storages.Restaurants).filter(restaurant =>
+    return JsonStorageManager.getStorage(Storages.Restaurants, []).filter(restaurant =>
         !restaurant.title.includes("Cafet") &&
         !restaurant.title.includes("Truck") &&
         !restaurant.title.includes("Market") &&
