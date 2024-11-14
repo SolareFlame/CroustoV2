@@ -19,6 +19,7 @@ const { sendHelp } = require("./command/commandHelp");
 
 const { PermissionsBitField } = require('discord.js');
 const { sendList } = require("./command/commandSendList");
+const { Storages } = require('./managers/StorageManager');
 
 const client = new Client({
     intents: [
@@ -138,7 +139,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     return;
                 }
 
-                await removePing(channel.id, "../storage/sendList.json");
+                await removePing(channel.id, Storages.SendList);
 
                 await interaction.reply({
                     content: "Notification quotidienne supprimée pour le channel <#" + channel + ">",
@@ -236,7 +237,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 console.log(`Data ajoutée : ${userResponses}`);
 
-                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], "../storage/sendList.json");
+                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], Storages.SendList);
                 delete userData[interaction.user.id];
                 return;
             }

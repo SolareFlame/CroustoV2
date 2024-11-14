@@ -1,5 +1,7 @@
-const sendList = require("../../storage/sendList.json");
 const fs = require('fs');
+const { Storages, JsonStorageManager } = require('../managers/StorageManager');
+
+const sendList = JsonStorageManager.getStorage(Storages.SendList, []);
 
 function getPing(time) {
     return sendList.filter(ping => ping.time === String(time));
