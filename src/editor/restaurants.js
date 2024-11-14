@@ -1,9 +1,8 @@
 // API : https://mobile-back.univ-lorraine.fr/restaurants
 
-const path = "../../restaurants.json"
-
 const fs = require("node:fs");
-const restaurants= require(path);
+const { JsonStorageManager, Storages } = require("../managers/StorageManager");
+const { rcwd } = require("../util/path");
 
 function updateRestaurants() {
     const url = 'https://mobile-back.univ-lorraine.fr/restaurants';
@@ -11,7 +10,7 @@ function updateRestaurants() {
         .then(response => response.json())
         .then(data => {
             console.log("Writing restaurants to file...");
-            fs.writeFileSync(path, JSON.stringify(data, null, 4));
+            fs.writeFileSync(Storages.Restaurants, JSON.stringify(data, null, 4));
         })
         .catch(error => {
             console.error("Error while fetching restaurants: ", error);
@@ -27,7 +26,7 @@ function existsRestaurant(id) {
 }
 
 function filterRestaurants() {
-    return restaurants.filter(restaurant =>
+    return JsonStorageManager.getStorage(Storages.Restaurants, []).filter(restaurant =>
         !restaurant.title.includes("Cafet") &&
         !restaurant.title.includes("Truck") &&
         !restaurant.title.includes("Market") &&
