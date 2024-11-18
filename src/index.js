@@ -38,7 +38,7 @@ client.once('ready', async () => {
     client.user.setActivity("les menus du jour", {type: ActivityType.Watching});
 
     //update les restaurants
-    await updateRestaurants();
+    updateRestaurants();
 
     deploy();
     startChecking(client);

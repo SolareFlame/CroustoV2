@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const { JsonStorageManager, Storages } = require("../managers/StorageManager");
 const { rcwd } = require("../util/path");
 
-async function updateRestaurants() {
+function updateRestaurants() {
 
     console.log("Updating restaurants...");
 
