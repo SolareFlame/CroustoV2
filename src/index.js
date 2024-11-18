@@ -11,7 +11,7 @@ const { deploy } = require("./command/deployCommands");
 const { setPing, existPing, removePing } = require('./editor/sendListEditor');
 const { startChecking } = require("./startChecking");
 const { sendInfo } = require("./command/commandSendInfo");
-const { existsRestaurant, getRestaurant } = require("./editor/restaurants");
+const { existsRestaurant, getRestaurant, updateRestaurants} = require("./editor/restaurants");
 const { directMenu } = require("./menu/renderMenu");
 const { today } = require("./menu/getMenu");
 const { sendMenu } = require("./command/commandSendMenu");
@@ -33,9 +33,12 @@ const cooldowns = new Map();
 
 const userData = {};
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log(`${process.env.DISCORD_BOT_NAME} logged in as ${client.user.tag}`);
-    client.user.setActivity("les menus du jour", { type: ActivityType.Watching });
+    client.user.setActivity("les menus du jour", {type: ActivityType.Watching});
+
+    //update les restaurants
+    await updateRestaurants();
 
     deploy();
     startChecking(client);

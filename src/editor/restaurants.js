@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const { JsonStorageManager, Storages } = require("../managers/StorageManager");
 const { rcwd } = require("../util/path");
 
-function updateRestaurants() {
+async function updateRestaurants() {
     const url = 'https://mobile-back.univ-lorraine.fr/restaurants';
     fetch(url)
         .then(response => response.json())
@@ -35,3 +35,5 @@ function filterRestaurants() {
 
 
 module.exports = { updateRestaurants, getRestaurant, existsRestaurant, filterRestaurants };
+
+updateRestaurants()
