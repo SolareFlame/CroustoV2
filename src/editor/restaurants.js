@@ -5,6 +5,9 @@ const { JsonStorageManager, Storages } = require("../managers/StorageManager");
 const { rcwd } = require("../util/path");
 
 async function updateRestaurants() {
+
+    console.log("Updating restaurants...");
+
     const url = 'https://mobile-back.univ-lorraine.fr/restaurants';
     fetch(url)
         .then(response => response.json())
