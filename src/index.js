@@ -36,9 +36,7 @@ const userData = {};
 client.once('ready', async () => {
     console.log(`${process.env.DISCORD_BOT_NAME} logged in as ${client.user.tag}`);
     client.user.setActivity("les menus du jour", {type: ActivityType.Watching});
-
-    //update les restaurants
-    updateRestaurants();
+    await updateRestaurants();
 
     deploy();
     startChecking(client);
