@@ -7,12 +7,10 @@ function startChecking(client) {
     const now = new Date();
     const nextHour = new Date(now);
 
-    nextHour.setHours(now.getHours() + 2, 0, 0, 0);
+    nextHour.setHours(now.getHours() + 1, 0, 0, 0);
     let timeUntilNextHour = nextHour - now;
 
     console.log(`Prochaine exécution à : ${nextHour.toLocaleTimeString()}, dans ${timeUntilNextHour / 1000} secondes`);
-
-    timeUntilNextHour = 1; //DEBUG
 
     setTimeout(async () => {
         await checkMenus(client);
@@ -21,7 +19,7 @@ function startChecking(client) {
 }
 
 async function checkMenus(client) {
-    let h = new Date().getHours();
+    let h = new Date().getHours() + 1;
     console.log(`Heure data : ${h}`);
 
     let menus = await checkMenu(h);
