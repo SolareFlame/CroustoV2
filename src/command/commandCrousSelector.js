@@ -30,12 +30,16 @@ module.exports = {
             throw new Error('Guild or channels cache is undefined.');
         }
 
-        const channels = guild.channels.cache
+        let channels = guild.channels.cache
             .filter(channel => channel.isTextBased())
             .map(channel => new StringSelectMenuOptionBuilder()
                 .setLabel(channel.name)
                 .setValue(channel.id)
             );
+
+        if (channels.length > 25) {
+            channels = channels.slice(0, 25);
+        }
 
         const select = new StringSelectMenuBuilder()
             .setPlaceholder('Sélectionnez le channel')
