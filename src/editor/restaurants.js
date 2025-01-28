@@ -35,12 +35,10 @@ function filterRestaurants() {
         !restaurant.title.includes("Facteria")
     );
 
-    if(list.length > 25) {
+    if(list.length > 24) {
         console.log("WARNING: More than 25 restaurants found. Limiting to 25.");
-        list = list.slice(0, 25);
+        list = list.slice(0, 24);
     }
-
-    console.log("Filtered restaurants: ", list);
 
     return list;
 }
