@@ -40,6 +40,8 @@ function filterRestaurants() {
         list = list.slice(0, 25);
     }
 
+    console.log("Filtered restaurants: ", list);
+
     return list;
 }
 
