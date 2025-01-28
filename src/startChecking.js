@@ -7,7 +7,7 @@ function startChecking(client) {
     const now = new Date();
     const nextHour = new Date(now);
 
-    nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+    nextHour.setHours(now.getHours() + 2, 0, 0, 0);
     let timeUntilNextHour = nextHour - now;
 
     console.log(`Prochaine exécution à : ${nextHour.toLocaleTimeString()}, dans ${timeUntilNextHour / 1000} secondes`);
@@ -56,3 +56,4 @@ async function checkMenus(client) {
 
 
 module.exports = { startChecking, checkMenus };
+
