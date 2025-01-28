@@ -17,13 +17,13 @@ function renderMenu(menu, id) {
         res += "\n";
     }
 
-    if (fs.existsSync("./configs/" + id + ".js")) {
+    if (fs.existsSync(__dirname + "../configs/" + id + ".js")) {
         console.log("Fichier de personnalisation personnalisé trouvé.")
 
-        const { render } = require('./configs/' + id + '.js');
+        const { render } = require(__dirname + "../configs/" + id + ".js");
         res = render(res);
     } else {
-        console.log("Fichier de personnalisation innexistant.")
+        console.log(`Fichier de personnalisation de ${id} innexistant.`)
         console.log("TEST V2.1")
     }
 
