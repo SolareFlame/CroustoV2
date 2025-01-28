@@ -24,6 +24,7 @@ function renderMenu(menu, id) {
         res = render(res);
     } else {
         console.log("Fichier de personnalisation innexistant.")
+        console.log("TEST V2.1")
     }
 
     return res;

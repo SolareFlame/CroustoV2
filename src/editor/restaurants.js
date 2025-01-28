@@ -26,14 +26,21 @@ function existsRestaurant(id) {
 }
 
 function filterRestaurants() {
-    return JsonStorageManager.getStorage(Storages.Restaurants, [])
-        .filter(restaurant =>
-            !restaurant.title.includes("Cafet") &&
-            !restaurant.title.includes("Truck") &&
-            !restaurant.title.includes("Market") &&
-            !restaurant.title.includes("Facteria")
-        )
-        .slice(0, 25);
+    let list = JsonStorageManager.getStorage(Storages.Restaurants, []);
+
+    list = list.filter(restaurant =>
+        !restaurant.title.includes("Cafet") &&
+        !restaurant.title.includes("Truck") &&
+        !restaurant.title.includes("Market") &&
+        !restaurant.title.includes("Facteria")
+    );
+
+    if(list.length > 25) {
+        console.log("WARNING: More than 25 restaurants found. Limiting to 25.");
+        list = list.slice(0, 25);
+    }
+
+    return list;
 }
 
 
