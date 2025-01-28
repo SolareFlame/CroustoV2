@@ -26,12 +26,16 @@ function existsRestaurant(id) {
 }
 
 function filterRestaurants() {
-    return JsonStorageManager.getStorage(Storages.Restaurants, []).filter(restaurant =>
-        !restaurant.title.includes("Cafet") &&
-        !restaurant.title.includes("Truck") &&
-        !restaurant.title.includes("Market") &&
-        !restaurant.title.includes("Facteria"));
+    return JsonStorageManager.getStorage(Storages.Restaurants, [])
+        .filter(restaurant =>
+            !restaurant.title.includes("Cafet") &&
+            !restaurant.title.includes("Truck") &&
+            !restaurant.title.includes("Market") &&
+            !restaurant.title.includes("Facteria")
+        )
+        .slice(0, 25);
 }
+
 
 
 module.exports = { updateRestaurants, getRestaurant, existsRestaurant, filterRestaurants };
