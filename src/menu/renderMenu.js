@@ -1,5 +1,6 @@
 const { getMenu, today} = require("./getMenu");
 const fs = require("node:fs");
+const {join} = require("path");
 
 function renderMenu(menu, id) {
     let res = "";
@@ -17,10 +18,11 @@ function renderMenu(menu, id) {
         res += "\n";
     }
 
-    if (fs.existsSync(__dirname + "../configs/" + id + ".js")) {
+    const config = join(__dirname, '..', 'configs', `${id}.js`);
+    if (fs.existsSync(config)) {
         console.log("Fichier de personnalisation personnalisé trouvé.")
 
-        const { render } = require(__dirname + "../configs/" + id + ".js");
+        const { render } = require(config);
         res = render(res);
     } else {
         console.log(`Fichier de personnalisation de ${id} innexistant.`)
@@ -42,8 +44,6 @@ async function directMenu(id, date, repas) {
 }
 
 module.exports = { directMenu };
-
-
 
 
 
