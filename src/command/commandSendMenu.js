@@ -1,25 +1,59 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { filterRestaurants, getRestaurant } = require("../editor/restaurants");
+const fs = require('fs');
+const { today, renderDate } = require("../menu/getMenu");
+require('dotenv').config();
 
-
-async function sendMenu(interaction, menu) {
+async function sendMenu(interaction, menu, id) {
     try {
+        const res = getRestaurant(id);
+
+        const desc = res[0].shortDesc;
+        const date = renderDate(today());
+        const title = res[0].title;
+        const img = res[0].thumbnailUrl;
+
+        const lat = res[0].latitude;
+        const long = res[0].longitude;
+
         const embed = new EmbedBuilder()
-            .setColor(0xFF0000)
-            .setTitle('Menu du Jour !')
-            .setDescription(`ALPHA`)
+            .setAuthor({
+                name: process.env.DISCORD_BOT_NAME,
+                url: process.env.GITHUB_URL,
+                iconURL: process.env.LOGO_1_URL
+            })
+            .setColor(0xE30613)
+            .setTitle('Menu du ' + date + ' : ' + title)
+            .setDescription(desc + '\n' + '[Location](https://www.google.com/maps/search/?api=1&query=' + lat + ',' + long + ')')
             .addFields({
-                name: "Menu:",
+                name: 'Menu :',
                 value: menu,
                 inline: false
             })
-            .setThumbnail('\n' +
-                'https://cdn.discordapp.com/avatars/1284499356963307610/638b450a2046175395cd4ff5789c8e14?size=256.png')
+            .setThumbnail('\n' + img)
             .setTimestamp()
-            .setFooter({text: 'Ulmenu by Solare', iconURL: 'https://avatars.githubusercontent.com/u/88492960?v=4'});
+            .setFooter({
+                text: `${process.env.DISCORD_BOT_NAME} by Solare`,
+                iconURL: 'https://avatars.githubusercontent.com/u/88492960?v=4'
+            });
 
-        // Send the embed to the channel
+        const button = new ButtonBuilder()
+            .setCustomId('info_' + id)
+            .setLabel('Plus d\'infos')
+            .setStyle(ButtonStyle.Secondary);
+
+
+        const row = new ActionRowBuilder()
+            .addComponents(button);
+
+        let data = [embed, row];
+
+        if (interaction === null) return data;
+
+
         await interaction.reply({
             embeds: [embed],
+            components: [row],
             ephemeral: false
         });
     } catch (error) {

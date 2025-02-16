@@ -1,5 +1,10 @@
-require('dotenv').config();
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+if(process.env.NODE_ENV == "development") {
+    require('dotenv').config();
+}
+
+const { REST, Routes, SlashCommandBuilder, StringSelectMenuOptionBuilder} = require('discord.js');
+const {filterRestaurants} = require("../editor/restaurants");
+const restaurants = filterRestaurants();
 
 const deployCommands = [
     new SlashCommandBuilder()
@@ -10,11 +15,18 @@ const deployCommands = [
     new SlashCommandBuilder()
         .setName('menu')
         .setDescription('Affiche le menu du jour')
-        .addNumberOption(option =>
+        .addStringOption(option =>
             option.setName('id')
                 .setDescription('ID du restaurant')
                 .setRequired(true)
+                .addChoices(
+                    ...restaurants.map(restaurant => ({
+                        name: restaurant.title,
+                        value: String(restaurant.id)
+                    }))
+                )
         )
+
         .addStringOption(option =>
             option.setName('repas')
                 .setDescription('Repas du jour')
@@ -24,6 +36,42 @@ const deployCommands = [
                     { name: 'soir', value: 'soir' }
                 )
         )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('info')
+        .setDescription('Affiche les informations sur un restaurant')
+        .addStringOption(option =>
+            option.setName('id')
+                .setDescription('ID du restaurant')
+                .setRequired(true)
+                .addChoices(
+                    ...restaurants.map(restaurant => ({
+                        name: restaurant.title,
+                        value: String(restaurant.id)
+                    }))
+                )
+        )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Affiche les commandes disponibles')
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('clear')
+        .setDescription('Supprime une notification quotidienne pour un channel donné')
+        .addChannelOption(option =>
+            option.setName('channel')
+                .setDescription('Channel concerné')
+                .setRequired(true)
+        )
+        .toJSON(),
+
+    new SlashCommandBuilder()
+        .setName('list')
+        .setDescription('Affiche la liste des notifications quotidiennes')
         .toJSON()
 ];
 
@@ -40,6 +88,22 @@ async function deploy() {
         console.log('Successfully reloaded ALL application (/) deployCommands.');
     } catch (error) {
         console.error("Error while deploying global commands: ", error);
+    }
+}
+
+async function deployServer(GUILD_ID) {
+    try {
+        const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+
+        console.log(`Started refreshing server ${GUILD_ID} deployCommands.`);
+
+        await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, GUILD_ID), {
+            body: deployCommands,
+        });
+
+        console.log(`Successfully reloaded server ${GUILD_ID} deployCommands.`);
+    } catch (error) {
+        console.error("Error while deploying server commands: ", error);
     }
 }
 

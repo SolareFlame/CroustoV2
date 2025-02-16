@@ -1,15 +1,25 @@
-require('dotenv').config();
+// Configure using dotenv file if in development
+if (process.env.NODE_ENV == "development") {
+    require('dotenv').config();
+}
+
 const { Client, GatewayIntentBits, Events, ActivityType } = require('discord.js');
+
 const { SetLocation, SetChannel, SetRole, SetDate } = require('./command/commandCrousSelector');
 const { deploy } = require("./command/deployCommands");
 
-const { setPing } = require('./editor/sendListEditor');
-const {getLocation} = require("./editor/locationEditor");
-const {directMenu} = require("./menu/renderMenu");
-const {today} = require("./menu/getMenu");
-const {sendMenu} = require("./command/commandSendMenu");
+const { setPing, existPing, removePing } = require('./editor/sendListEditor');
+const { startChecking } = require("./startChecking");
+const { sendInfo } = require("./command/commandSendInfo");
+const { existsRestaurant, getRestaurant, updateRestaurants} = require("./editor/restaurants");
+const { directMenu } = require("./menu/renderMenu");
+const { today } = require("./menu/getMenu");
+const { sendMenu } = require("./command/commandSendMenu");
+const { sendHelp } = require("./command/commandHelp");
 
-let data = [];
+const { PermissionsBitField } = require('discord.js');
+const { sendList } = require("./command/commandSendList");
+const { Storages } = require('./managers/StorageManager');
 
 const client = new Client({
     intents: [
@@ -19,108 +29,232 @@ const client = new Client({
     ]
 });
 
-client.once('ready', () => {
+const cooldowns = new Map();
+
+const userData = {};
+
+client.once('ready', async () => {
     console.log(`${process.env.DISCORD_BOT_NAME} logged in as ${client.user.tag}`);
-    client.user.setActivity("les menus du jour", { type: ActivityType.Watching });
+    client.user.setActivity("les menus du jour", {type: ActivityType.Watching});
+    await updateRestaurants();
 
     deploy();
+    startChecking(client);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-    if (interaction.isCommand()) {
-        if (interaction.commandName === 'new') {
-            await interaction.reply({
-                content: "Sélectionnez votre Crous :",
-                components: [await SetLocation()],
-                ephemeral: true
-            });
-        }
+    try {
+        if (interaction.isCommand()) {
+            if (interaction.commandName === 'menu') {
+                const userId = interaction.user.id;
+                const now = Date.now();
+                const cooldownAmount = 15 * 1000;
 
+                if (!cooldowns.has(interaction.commandName)) {
+                    cooldowns.set(interaction.commandName, new Map());
+                }
 
+                const timestamps = cooldowns.get(interaction.commandName);
 
-        if (interaction.commandName === 'menu') {
-            let id = interaction.options.getNumber('id');
+                if (timestamps.has(userId)) {
+                    const expirationTime = timestamps.get(userId) + cooldownAmount;
 
-            //vérifier l'existance de l'id
-            if (getLocation(id)) {
-                console.log("ID valide");
-            } else {
-                console.log("ID invalide");
+                    if (now < expirationTime) {
+                        const timeLeft = (expirationTime - now) / 1000; // Temps restant en secondes
+                        return await interaction.reply({
+                            content: `Veuillez attendre ${timeLeft.toFixed(1)} secondes avant de réutiliser cette commande.`,
+                            ephemeral: true,
+                        });
+                    }
+                }
+
+                timestamps.set(userId, now);
+                setTimeout(() => timestamps.delete(userId), cooldownAmount);
+
+                let id = parseInt(interaction.options.getString('id'));
+
+                if (!existsRestaurant(id)) {
+                    console.log("ID invalide");
+                    await interaction.reply({ content: "ID invalide", ephemeral: true });
+                    return;
+                }
+
+                let menu = await directMenu(id, today(), interaction.options.getString('repas'));
+
+                if (!menu) {
+                    await interaction.reply({
+                        content: "Aucun repas du **" + interaction.options.getString('repas') + "** trouvé pour aujourd'hui.",
+                        ephemeral: true,
+                    });
+                    return;
+                }
+
+                await sendMenu(interaction, menu, id);
+                console.log("Menu envoyé avec succès.");
                 return;
             }
 
-            let menu = await directMenu(id, today(), interaction.options.getString('repas'))
+            if (interaction.commandName === 'info') {
+                let id = parseInt(interaction.options.getString('id'));
 
-            if (menu === null) {
+                if (!existsRestaurant(id)) {
+                    console.log("ID invalide");
+                    await interaction.reply({ content: "ID invalide", ephemeral: true });
+                    return;
+                }
+
+                await sendInfo(interaction, id);
+                console.log("Information envoyée avec succès.");
+                return;
+            }
+
+            if (interaction.commandName === 'help') {
+                await sendHelp(interaction);
+                return;
+            }
+
+            if (interaction.commandName === 'clear') {
+                if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                    await interaction.reply({
+                        content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                let channel = interaction.options.getChannel('channel');
+
+                if (!channel) {
+                    await interaction.reply({
+                        content: "Channel invalide",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                if (!existPing(channel.id)) {
+                    await interaction.reply({
+                        content: "Aucune notification quotidienne n'est configurée pour ce channel. (/list)",
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                await removePing(channel.id, Storages.SendList);
+
                 await interaction.reply({
-                    content: "Erreur lors de la récupération du menu.",
+                    content: "Notification quotidienne supprimée pour le channel <#" + channel + ">",
+                    ephemeral: true
+                });
+
+                console.log("Notification quotidienne supprimée pour le channel " + channel);
+                return;
+            }
+
+
+            if (interaction.commandName === 'list') {
+                await sendList(interaction, client, interaction.guild.id);
+                return;
+            }
+
+            if (interaction.commandName === 'refresh') {
+                await deployServer(interaction.guild.id);
+                return;
+            }
+
+            /*
+            ------------------- /NEW -------------------
+             */
+
+            if (interaction.commandName === 'new') {
+                if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                    await interaction.reply({
+                        content: "Vous n'avez pas les permissions nécessaires pour effectuer cette commande.",
+                        ephemeral: true
+                    });
+                    return;
+                } else {
+                    userData[interaction.user.id] = [];
+                    await interaction.reply({
+                        content: "Sélectionnez votre Crous :",
+                        components: [await SetLocation()],
+                        ephemeral: true
+                    });
+                    return;
+                }
+            }
+        }
+
+        if (interaction.isStringSelectMenu()) {
+            await interaction.deferUpdate();
+
+            const userResponses = userData[interaction.user.id] || [];
+
+            if (interaction.customId === 'location_selector') {
+                userResponses[0] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
+
+                await interaction.editReply({
+                    content: `Sélectionnez le channel où vous souhaitez recevoir les notifications :`,
+                    components: [await SetChannel(interaction.guild)],
                     ephemeral: true
                 });
                 return;
             }
 
-            sendMenu(interaction, menu).then(() => {
-                console.log("Menu envoyé avec succès.");
-            });
-        }
-    }
+            if (interaction.customId === 'channel_selector') {
+                userResponses[1] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
-    if (interaction.isStringSelectMenu()) {
-        // Get the location
-        if (interaction.customId === 'location_selector') {
-            data.push(interaction.values[0]);
+                await interaction.editReply({
+                    content: `Sélectionnez le rôle qui recevra les notifications :`,
+                    components: [await SetRole(interaction.guild)],
+                    ephemeral: true
+                });
+                return;
+            }
 
-            await interaction.deferUpdate();
+            if (interaction.customId === 'role_selector') {
+                userResponses[2] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
-            await interaction.editReply({
-                content: `Sélection: ${data[0]}`,
-                components: [await SetChannel(interaction.guild)],
-                ephemeral: true
-            });
-        }
+                await interaction.editReply({
+                    content: `Sélectionnez l'heure à laquelle vous souhaitez recevoir les notifications :`,
+                    components: [await SetDate()],
+                    ephemeral: true
+                });
+                return;
+            }
 
-        // Get the channel
-        if (interaction.customId === 'channel_selector') {
-            data.push(interaction.values[0]);
+            if (interaction.customId === 'date_selector') {
+                userResponses[3] = interaction.values[0];
+                userData[interaction.user.id] = userResponses;
 
-            await interaction.deferUpdate();
+                await interaction.editReply({
+                    content: `Une notification automatique sera envoyée pour le \`Crous ${getRestaurant(parseInt(userResponses[0]))[0].title}\` dans le channel <#${userResponses[1]}> pour le rôle <@&${userResponses[2]}> à \`${userResponses[3]}:00h\` tous les jours.`,
+                    components: [],
+                    ephemeral: true
+                });
 
-            await interaction.editReply({
-                content: `Sélection: ${data[1]}`,
-                components: [await SetRole(interaction.guild)],
-                ephemeral: true
-            });
-        }
+                console.log(`Data ajoutée : ${userResponses}`);
 
-        // Get the role
-        if (interaction.customId === 'role_selector') {
-            data.push(interaction.values[0]);
-
-            await interaction.deferUpdate();
-
-            await interaction.editReply({
-                content: `Sélection: ${data[2]}`,
-                components: [await SetDate()],
-                ephemeral: true
-            });
+                await setPing(userResponses[0], userResponses[1], userResponses[2], userResponses[3], Storages.SendList);
+                delete userData[interaction.user.id];
+                return;
+            }
         }
 
-        // Get the date
-        if(interaction.customId === 'date_selector') {
-            data.push(interaction.values[0]);
-
-            await interaction.deferUpdate();
-
-            await interaction.editReply({
-                content: `Sélection: ${data}`,
-                components: [],
-                ephemeral: true
-            });
-
-            console.log("Data ajoutée :" + data[0] + " " + data[1] + " " + data[2] + " " + data[3]);
-
-            setPing(data[0], data[1], data[2], data[3], "../sendList.json");
+        if (interaction.isButton() && interaction.customId && interaction.customId.startsWith('info_')) {
+            const id = interaction.customId.split('_')[1];
+            await sendInfo(interaction, parseInt(id));
         }
+
+    } catch (error) {
+        console.error("Error handling interaction: ", error);
+        await interaction.reply({
+            content: "Une erreur s'est produite lors de l'interaction.",
+            ephemeral: true
+        });
     }
 });
 

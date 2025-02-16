@@ -1,6 +1,8 @@
 const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const {filterRestaurants} = require("../editor/restaurants");
 
-const locations = require('../../locations.json');
+
+const restaurants = filterRestaurants();
 
 module.exports = {
     // Set a location
@@ -9,10 +11,10 @@ module.exports = {
             .setPlaceholder('Sélectionnez votre Crous')
             .setCustomId('location_selector')
             .addOptions(
-                locations.map(location => new StringSelectMenuOptionBuilder()
-                    .setLabel(location.name)
-                    .setDescription(location.desc || 'Aucune description')
-                    .setValue(location.id.toString())
+                restaurants.map(restaurant => new StringSelectMenuOptionBuilder()
+                    .setLabel(restaurant.title)
+                    .setDescription(restaurant.shortDesc || 'Aucune description')
+                    .setValue(restaurant.id.toString())
                 )
             );
 
@@ -28,12 +30,16 @@ module.exports = {
             throw new Error('Guild or channels cache is undefined.');
         }
 
-        const channels = guild.channels.cache
+        let channels = guild.channels.cache
             .filter(channel => channel.isTextBased())
             .map(channel => new StringSelectMenuOptionBuilder()
                 .setLabel(channel.name)
                 .setValue(channel.id)
             );
+
+        if (channels.length > 25) {
+            channels = channels.slice(0, 25);
+        }
 
         const select = new StringSelectMenuBuilder()
             .setPlaceholder('Sélectionnez le channel')
@@ -69,12 +75,13 @@ module.exports = {
         return row;
     },
 
-    // Set a date (by modal entry)
+    // Set a date
     async SetDate() {
         const select = new StringSelectMenuBuilder()
             .setPlaceholder('Sélectionnez votre horaire')
             .setCustomId('date_selector')
             .addOptions(
+                // Create 24 options for each hour of the day
                 Array.from({ length: 24 }, (_, i) => i).map(hour => new StringSelectMenuOptionBuilder()
                     .setLabel(`${hour.toString().padStart(2, '0')}:00`)
                     .setValue(hour.toString())
