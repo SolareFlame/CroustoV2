@@ -15,8 +15,8 @@ function render(row) {
         if (item.startsWith("Dessert:") || item.startsWith("Desserts:")) item = "🍰 " + item;
 
         item = item.replace(/^(.*?):/g, "\n **$1**:"); // Bold the first word before ":"
-        item = item.replace(/:/g, ":\n -"); // Add a new line after ":"
-        item = item.replace(/\//g, "\n -"); // Add a new line after "/"
+        item = item.replace(/:/g, ":\n-"); // Add a new line after ":"
+        item = item.replace(/\//g, "\n-"); // Add a new line after "/"
 
         res += item + "\n";
     }
